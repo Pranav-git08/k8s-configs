@@ -1,0 +1,14 @@
+apiVersion: platform.confluent.io/v1beta1
+kind: Connector
+metadata:
+  name: datagen-source-inventory
+  namespace: confluent
+spec:
+  class: "io.confluent.kafka.connect.datagen.DatagenSourceConnector"
+  taskMax: 1
+  configs:
+    kafka.topic: "inventory-data"
+    quickstart: "inventory"
+    key.converter: "org.apache.kafka.connect.storage.StringConverter"
+    value.converter: "io.confluent.connect.avro.AvroConverter"
+    value.converter.schema.registry.url: "http://schemaregistry.confluent.svc.cluster.local:8081"
