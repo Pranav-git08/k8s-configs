@@ -14,16 +14,27 @@ spec:
         app: kafka-client
     spec:
       containers:
-       name: python-client
+      - name: python-client
         image: python:3.9-slim
-       
         command: ["/bin/sh", "-c", "pip install confluent-kafka pandas && sleep infinity"]
         env:
-         name: BOOTSTRAP_SERVERS
-          value: "kafka.confluent.svc.cluster.local:9092"
-         name: SCHEMA_REGISTRY_URL
-          value: "http://schemaregistry.confluent.svc.cluster.local:8081"
-         name: KAFKA_USER
-          value: "admin-user"
-         name: KAFKA_PASS
-          value: "admin-password"
+          - name: BOOTSTRAP_SERVERS
+            value: "kafka.confluent.svc.cluster.local:9092"
+          - name: KAFKA_USER
+            valueFrom:
+              secretKeyRef:
+                name: kafka-client-secrets
+                key: username
+          - name: KAFKA_PASS
+            valueFrom:
+              secretKeyRef:
+                name: kafka-client-secrets
+                key: password
+        volumeMounts:
+          - name: ssl-certs
+            mountPath: "/etc/kafka/secrets"
+            readOnly: true
+      volumes:
+        - name: ssl-certs
+          secret:
+            secretName: my-tls-secret # The same secret you used in the Kafka manifest
