@@ -1,0 +1,23 @@
+apiVersion: platform.confluent.io/v1beta1
+kind: Connect
+metadata:
+  name: connect
+  namespace: confluent
+spec:
+  replicas: 1
+  image:
+    application: confluentinc/cp-server-connect:7.5.0
+    init: confluentinc/confluent-init-container:2.8.0
+  build:
+    type: on-demand
+    onDemand:
+      plugins:
+        - location:
+            url: "https://hub.confluent.io/api/plugins/confluentinc/kafka-connect-datagen/versions/0.6.2/archive"
+  dependencies:
+    kafka:
+      bootstrapEndpoint: kafka.confluent.svc.cluster.local:9071
+      authentication:
+        type: mtls
+      tls:
+        enabled: true
