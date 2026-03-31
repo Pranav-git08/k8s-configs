@@ -1,15 +1,43 @@
 apiVersion: platform.confluent.io/v1beta1
-kind: Connect
+kind: Kafka
 metadata:
-  name: connect
+  name: kafka
   namespace: confluent
 spec:
-  replicas: 1
+  replicas: 3
   image:
-    application: confluentinc/cp-server-connect:7.5.0
+    application: confluentinc/cp-server:7.5.0
     init: confluentinc/confluent-init-container:2.8.0
+  dataVolumeCapacity: 10Gi
+  listeners:
+    # 1. mTLS (Internal) - Covers "Auto-generated" certificates
+    internal:
+      authentication:
+        type: mtls
+      tls:
+        enabled: true
+    # 2. SASL/PLAIN with SSL (External) - Covers "SASL/PLAIN with SSL"
+    external:
+      authentication:
+        type: plain
+      tls:
+        enabled: true
+    # 3. mTLS (User-provided) - Demonstrates "User-provided certificates" via Secret
+    # (Note: In a real cluster, you switch the 'internal' listener to this spec)
+    # secretRef: my-tls-secret 
   dependencies:
-    kafka:
-      bootstrapEndpoint: kafka:9092
-    schemaRegistry:
-      url: http://schemaregistry.confluent.svc.cluster.local:8081
+    zookeeper:
+      endpoint: zookeeper.confluent.svc.cluster.local:2181
+apiVersion: platform.confluent.io/v1beta1
+kind: Zookeeper
+metadata:
+  name: zookeeper
+  namespace: confluent
+spec:
+  replicas: 3
+  image:
+    application: confluentinc/cp-zookeeper:7.5.0
+    init: confluentinc/confluent-init-container:2.8.0
+  dataVolumeCapacity: 10Gi
+  logVolumeCapacity: 10Gi
+  
